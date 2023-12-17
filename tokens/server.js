@@ -21,13 +21,7 @@ app.use(cors({
     origin : "*"
 }))
 
-app.use(session({
-    name : "user_sid",
-    secret : process.env.SESSION_SECRET,
-    resave : false,
-    saveUninitialized : false,
-    cookie : {maxAge : 1000*60*60,sameSite:true,secure : false,httpOnly:true}
-}))
+// 1
 
 
 
@@ -39,22 +33,45 @@ const users = [
 
 
 const redirectHome = (req,res,next) =>{
-    if(req.session.userId){
-        res.redirect('/home')
-    }
-    else{
-        next()
-    }
+    // const authHeader = req.headers['authorization']
+    // const token = authHeader && authHeader.split(' ')[1]
+    // if(token){
+    //     jwt.verify(token,process.env.ACCESS_SECRET_TOKEN,(err,user)=>{
+    //         if(err){
+    //             next()
+    //         }
+    //         else{
+    //             req.user = user
+    //             res.status(200).redirect('/home')
+    //         }
+
+    //     })
+    // }
+    // else{
+    //     next()
+    // }
+    next()
 }
 
 const redirectLogin = (req,res,next) => {
-    console.log('checking for session ')
-    if(!req.session.userId){
-        res.redirect('/login')
+    const authHeader = req.headers['authorization']
+    const token = authHeader && authHeader.split(' ')[1]
+    if(!token){
+        res.status(401).redirect('/login')
     }
     else{
-        next()
+        jwt.verify(token,process.env.ACCESS_SECRET_TOKEN,(err,user)=>{
+            if(err){
+                return res.status(403).redirect('/login')
+            }
+            else{
+                req.user = user
+                next()
+            }
+
+        })
     }
+
 
 
 }
@@ -86,6 +103,7 @@ app.get('/home',redirectLogin,(req,res)=>{
 
 
 app.post("/login",redirectHome,async(req,res)=>{ 
+    console.log('vachindhi')
 
     const query = {
         $or: [
@@ -101,9 +119,11 @@ app.post("/login",redirectHome,async(req,res)=>{
                 return res.sendStatus(400)
             }
             if(resp){
-                req.session.userId = loggeduser.id
-                return res.sendStatus(200)
-                
+                console.log('user verified')
+                const user = {name : loggeduser.username , email : loggeduser.Email}
+                const accessToken = jwt.sign(user,process.env.ACCESS_SECRET_TOKEN)
+                console.log(accessToken)
+                return res.send({'msg' : 'okay'})
             }
             else{
                 return res.sendStatus(401)
@@ -140,8 +160,9 @@ app.post("/register",redirectHome,async(req,res)=>{
             const hashedPass = await bcrypt.hash(req.body.password,salt);
             const newUser = await new user({username : req.body.username , Email : req.body.email,Password : hashedPass,Mobile : req.body.mobile});
             await newUser.save();
-            req.session.userId = newUser.id
-            res.sendStatus(200)
+            const user = {name : newUser.username}
+            const acessToken = jwt.sign(user,process.env.ACCESS_SECRET_TOKEN)
+            return res.status(200).json({accessToken : acessToken})
             
         }
         catch(err){

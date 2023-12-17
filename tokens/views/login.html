@@ -39,20 +39,28 @@
                 'Content-type' : 'application/x-www-form-urlencoded',
             }
         })
-        .then(response => {
-            if (response.status === 200) {
-                // Successful login, handle the redirection on the client side
-                window.location.replace("http://localhost:4000/home")
-                // console.log("200 status code issaa")
-            } else {
-                // Handle login failure on the client side
-                console.log("egirirpoyindhi")
-            }
-        })
-        .catch(error => {
-            // Handle network or other errors
-            console.error('An error occurred during login', error);
-        });
+        // .then(response => {
+        //     if (response.status === 200) {
+        //         // Successful login, handle the redirection on the client side
+        //         return response
+        //         // localStorage.setItem("accessToken" , response.accessToken)
+        //         // window.location.replace("http://localhost:4000/home")
+        //         // console.log("200 status code issaa")
+        //     } else{
+        //         console.log('200 raledhroyy')
+        //         // Handle login failure on the client side
+        //         // window.location.replace("http://localhost:4000/login")
+        //     }
+        // }).then((data) => {
+        //     if(data){
+        //         console.log(data)
+        //     }
+        // })
+        // .catch(error => {
+        //     // Handle network or other errors
+        //     console.error('An error occurred during login', error);
+        //     window.location.replace("http://localhost:4000/login")
+        // });
             
     })
 
